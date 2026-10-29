@@ -1,5 +1,13 @@
 # Intervals.icu MCP Server
 
+> **Fork with a restricted write policy.** By default this server is read-only,
+> except for **training plans** and the **workout library** (create, update,
+> schedule). Activity, interval, event and custom-item writes are not exposed,
+> and every non-GET HTTP call is checked against an allowlist
+> (`src/intervals_mcp_server/write_policy.py`); `DELETE` is always refused.
+> Set `INTERVALS_WRITE_POLICY=full` to restore the upstream behaviour.
+
+
 Model Context Protocol (MCP) server for connecting Claude and ChatGPT with the Intervals.icu API. It provides tools for retrieving activities, events, wellness data, power curves, and more.
 
 If you find the MCP server useful, please consider supporting its continued development with a donation.

@@ -13,6 +13,7 @@ os.environ.setdefault("API_KEY", "test")
 os.environ.setdefault("ATHLETE_ID", "i1")
 
 from intervals_mcp_server.mcp_instance import mcp  # noqa: E402
+from intervals_mcp_server.write_policy import is_tool_allowed  # noqa: E402
 
 # Import all tool modules so they register with the mcp instance
 import intervals_mcp_server.tools.activities  # noqa: E402, F401
@@ -133,6 +134,12 @@ EXPECTED_ANNOTATIONS = {
         "readOnlyHint": False,
         "destructiveHint": False,
     },
+}
+
+
+# Write tools blocked by the fork's write policy are intentionally not registered.
+EXPECTED_ANNOTATIONS = {
+    name: expected for name, expected in EXPECTED_ANNOTATIONS.items() if is_tool_allowed(name)
 }
 
 

@@ -14,6 +14,8 @@ from http import HTTPStatus
 from typing import Any
 
 import httpx  # pylint: disable=import-error
+
+from intervals_mcp_server.write_policy import is_request_allowed
 from fastmcp import FastMCP
 
 from intervals_mcp_server.config import get_config
@@ -169,6 +171,17 @@ async def make_intervals_request(
     Returns:
         dict[str, Any] | list[dict[str, Any]]: The parsed JSON response from the API, or an error dict.
     """
+    # Enforce this fork's write policy before anything leaves the server
+    if not is_request_allowed(method, url):
+        logger.warning("Blocked %s %s by write policy", method, url)
+        return {
+            "error": True,
+            "message": (
+                f"{method.upper()} {url} is blocked by this server's write policy "
+                "(only training plans and workouts can be modified)."
+            ),
+        }
+
     # Prepare request configuration
     full_url, auth, headers, error_msg = _prepare_request_config(url, api_key, method)
     if error_msg:

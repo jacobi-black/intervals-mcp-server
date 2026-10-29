@@ -11,6 +11,7 @@ import os
 from fastmcp import FastMCP
 
 from intervals_mcp_server.api.client import setup_api_client
+from intervals_mcp_server.write_policy import current_policy, is_tool_allowed
 
 logger = logging.getLogger("intervals_icu_mcp_server")
 
@@ -43,3 +44,29 @@ mcp: FastMCP = FastMCP(
     lifespan=setup_api_client,
     auth=_auth_server_provider,
 )
+
+
+# --- Write policy: tool layer -------------------------------------------------
+# Tools register themselves with ``@mcp.tool(...)`` at import time. Wrap the
+# decorator so write tools blocked by the policy are never registered: the
+# function stays importable (tests, re-exports) but MCP clients cannot see it.
+_register_tool = mcp.tool
+
+
+def _policy_tool(*args, **kwargs):  # type: ignore[no-untyped-def]
+    def _apply(fn, decorator):  # type: ignore[no-untyped-def]
+        if not is_tool_allowed(fn.__name__):
+            logger.info("Tool %s not registered (write policy %s)", fn.__name__, current_policy())
+            return fn
+        return decorator(fn)
+
+    # Bare usage: @mcp.tool
+    if len(args) == 1 and callable(args[0]) and not kwargs:
+        return _apply(args[0], _register_tool)
+
+    decorator = _register_tool(*args, **kwargs)
+    return lambda fn: _apply(fn, decorator)
+
+
+mcp.tool = _policy_tool  # type: ignore[method-assign]
+logger.info("Write policy: %s", current_policy())
