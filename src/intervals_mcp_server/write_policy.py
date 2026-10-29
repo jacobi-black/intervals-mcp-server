@@ -7,7 +7,9 @@ By default (policy ``plans_workouts``) the server is read-only, except for:
 * training plans (``get``/``change_training_plan``, ``apply_plan_changes``,
   ``apply_plan_to_calendar``, ``change_athlete_plans_bulk``);
 * the workout library (``create_workout``, ``update_workout``,
-  ``schedule_workout``).
+  ``schedule_workout``);
+* calendar events (``add_or_update_event``, ``delete_event``,
+  ``delete_events_by_date_range``).
 
 Two independent layers enforce it:
 
@@ -15,7 +17,7 @@ Two independent layers enforce it:
    with the MCP server, so clients cannot even see them.
 2. **HTTP layer** — ``make_intervals_request`` refuses any non-GET request
    whose method + path is not on ``ALLOWED_WRITE_ENDPOINTS``. ``DELETE`` is
-   always refused under the restricted policy.
+   only accepted on a single calendar event.
 
 Set ``INTERVALS_WRITE_POLICY=full`` to restore the upstream behaviour (all
 tools, all methods). Any other value, or no value, means ``plans_workouts``.
@@ -43,10 +45,6 @@ BLOCKED_WRITE_TOOLS: frozenset[str] = frozenset(
         "update_activity_interval",
         "delete_activity_intervals",
         "split_activity_interval",
-        # calendar events (workouts reach the calendar via schedule_workout)
-        "add_or_update_event",
-        "delete_event",
-        "delete_events_by_date_range",
         # custom items
         "create_custom_item",
         "update_custom_item",
@@ -64,6 +62,10 @@ ALLOWED_WRITE_TOOLS: frozenset[str] = frozenset(
         "create_workout",
         "update_workout",
         "schedule_workout",
+        # calendar events
+        "add_or_update_event",
+        "delete_event",
+        "delete_events_by_date_range",
     }
 )
 
@@ -81,6 +83,10 @@ ALLOWED_WRITE_ENDPOINTS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("PUT", re.compile(rf"^{_ATHLETE}/workouts/[^/]+/?$")),
     # schedule_workout: puts a library workout on the calendar
     ("POST", re.compile(rf"^{_ATHLETE}/events/?$")),
+    # calendar events: update / delete one event (delete_events_by_date_range
+    # deletes event by event through the same endpoint)
+    ("PUT", re.compile(rf"^{_ATHLETE}/events/[^/]+/?$")),
+    ("DELETE", re.compile(rf"^{_ATHLETE}/events/[^/]+/?$")),
 )
 
 

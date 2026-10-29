@@ -1,10 +1,11 @@
 # Intervals.icu MCP Server
 
 > **Fork with a restricted write policy.** By default this server is read-only,
-> except for **training plans** and the **workout library** (create, update,
-> schedule). Activity, interval, event and custom-item writes are not exposed,
-> and every non-GET HTTP call is checked against an allowlist
-> (`src/intervals_mcp_server/write_policy.py`); `DELETE` is always refused.
+> except for **training plans**, the **workout library** (create, update,
+> schedule) and **calendar events** (add, update, delete). Activity, interval
+> and custom-item writes are not exposed, and every non-GET HTTP call is
+> checked against an allowlist (`src/intervals_mcp_server/write_policy.py`);
+> `DELETE` is only accepted on a single calendar event.
 > Set `INTERVALS_WRITE_POLICY=full` to restore the upstream behaviour.
 
 

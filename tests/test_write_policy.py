@@ -54,6 +54,8 @@ def test_every_registered_write_tool_is_allowlisted():
         ("PUT", "/athlete/i1/workouts/42"),
         ("POST", "/athlete/i1/events"),
         ("POST", "https://intervals.icu/api/v1/athlete/i1/workouts?x=1"),
+        ("PUT", "/athlete/i1/events/9"),
+        ("DELETE", "/athlete/i1/events/9"),
     ],
 )
 def test_allowed_requests(method, url):
@@ -63,11 +65,11 @@ def test_allowed_requests(method, url):
 @pytest.mark.parametrize(
     ("method", "url"),
     [
-        ("DELETE", "/athlete/i1/events/9"),
         ("DELETE", "/activity/123"),
+        ("DELETE", "/athlete/i1/events"),
+        ("DELETE", "/athlete/i1/events/9/extra"),
         ("DELETE", "/athlete/i1/workouts/42"),
         ("PUT", "/activity/123"),
-        ("PUT", "/athlete/i1/events/9"),
         ("POST", "/activity/123/messages"),
         ("POST", "/athlete/i1/activities/manual"),
         ("PUT", "/activity/123/intervals"),

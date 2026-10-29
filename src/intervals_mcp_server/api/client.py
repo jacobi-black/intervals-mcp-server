@@ -178,7 +178,7 @@ async def make_intervals_request(
             "error": True,
             "message": (
                 f"{method.upper()} {url} is blocked by this server's write policy "
-                "(only training plans and workouts can be modified)."
+                "(only training plans, workouts and calendar events can be modified)."
             ),
         }
 
